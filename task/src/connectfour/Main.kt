@@ -1,18 +1,48 @@
 package connectfour
 
-fun main() {
+enum class Player(val color: String) {
+    RED("o"),
+    YELLOW("*"),
+    BLANK(" ")
+}
+class Board(rows: Int, columns: Int) {
+    val board = Array(rows) { Array<Player>(columns) { Player.BLANK } }
+}
+fun printBoard(board: Array<Array<Player>>) {
+    for (i in board[0].indices) {
+        print(" ${i + 1}")
+    }
+    println()
+    for (i in board.indices) {
+        print("║")
+        for (j in 0..board[i].lastIndex) {
+
+            if (board[i][j] == Player.BLANK) print(" ║")
+            else if (board[i][j] == Player.RED) print("o║")
+            else if (board[i][j] == Player.YELLOW) print("*║")
+
+        }
+        println()
+    }
+
+    for (i in 0..board.size * 2) {
+        if (i == board.size * 2) print("╝")
+        else if (i == 0) print("╚")
+        else if (i % 2 == 0) print("╩")
+        else if (i % 2 == 1) print("═")
+    }
+}
+
+fun setBoardDimensions(): Array<Int> {
     var rowsAndColumns: String
     var rows: Int
     var columns: Int
-    println("Connect Four")
-    println("First player's name:")
-    val firstPlayer = readln()
-    println("Second player's name:")
-    val secondPLayer = readln()
 
     while (true) {
-        println("Set the board dimensions (Rows x Columns)\n" +
-                "Press Enter for default (6 x 7)")
+        println(
+            "Set the board dimensions (Rows x Columns)\n" +
+                    "Press Enter for default (6 x 7)"
+        )
         rowsAndColumns = readln()
         rowsAndColumns = rowsAndColumns.filter { !it.isWhitespace() }
         rowsAndColumns = rowsAndColumns.lowercase()
@@ -39,32 +69,36 @@ fun main() {
         }
     }
 
+    return arrayOf(rows, columns)
+}
+
+fun main() {
+    var rowsAndColumns: Array<Int>
+    val rows: Int
+    val columns: Int
+
+    println("Connect Four")
+    println("First player's name:")
+    val firstPlayer = readln()
+    println("Second player's name:")
+    val secondPLayer = readln()
+
+    rowsAndColumns = setBoardDimensions()
+    rows = rowsAndColumns[0]
+    columns = rowsAndColumns[1]
+
     println("$firstPlayer vs $secondPLayer")
     println("$rows X $columns board")
 
 
-    repeat(columns) { print(" ${it + 1}") }
-    println()
-    for (i in 1..rows) {
-        print("| ".repeat(columns))
-        println("|")
-    }
-    println("=".repeat(columns * 2 + 1))
-
-/*    val board = Array(rows + 2) { CharArray(columns * 2 + 1)}
-    //board[1][1] = '║'
-    for (i in board.indices) {
-        for (j in 0..board[i].lastIndex) {
-            if (i == 0 && j % 2 == 1) {
-                board[i][j] = (j / 2 + 1).digitToChar()
-            }
-            if (j % 2 == 0 && i != 0 && i != board.lastIndex) board[i][j] = '║'
-            if (i == board.lastIndex && j == 0) board[i][j] = '╚'
-            else if (i == board.lastIndex && j == board[i].lastIndex) board[i][j] = '╝'
-            else if (i == board.lastIndex && j % 2 == 0) board[i][j] = '╩'
-            if (i == board.lastIndex && j % 2 == 1) board[i][j] = '═'
-            print(board[i][j])
-        }
-        println()
-    }*/
+    val board = Board(rows, columns)
+    printBoard(board.board)
 }
+
+/*repeat(columns) { print(" ${it + 1}") }
+println()
+for (i in 1..rows) {
+    print("| ".repeat(columns))
+    println("|")
+}
+println("=".repeat(columns * 2 + 1))*/
