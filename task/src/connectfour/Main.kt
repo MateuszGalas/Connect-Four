@@ -1,13 +1,15 @@
 package connectfour
 
-enum class Player(val color: String) {
-    RED("o"),
-    YELLOW("*"),
-    BLANK(" ")
+enum class Player() {
+    RED,
+    YELLOW,
+    BLANK
 }
+
 class Board(rows: Int, columns: Int) {
     val board = Array(rows) { Array<Player>(columns) { Player.BLANK } }
 }
+
 fun printBoard(board: Array<Array<Player>>) {
     for (i in board[0].indices) {
         print(" ${i + 1}")
@@ -16,21 +18,24 @@ fun printBoard(board: Array<Array<Player>>) {
     for (i in board.indices) {
         print("║")
         for (j in 0..board[i].lastIndex) {
-
-            if (board[i][j] == Player.BLANK) print(" ║")
-            else if (board[i][j] == Player.RED) print("o║")
-            else if (board[i][j] == Player.YELLOW) print("*║")
-
+            if (board[i][j] == Player.BLANK) {
+                print(" ║")
+            } else if (board[i][j] == Player.RED) {
+                print("o║")
+            } else if (board[i][j] == Player.YELLOW) {
+                print("*║")
+            }
         }
         println()
     }
 
-    for (i in 0..board.size * 2) {
-        if (i == board.size * 2) print("╝")
+    for (i in 0..board[0].size * 2) {
+        if (i == board[0].size * 2) print("╝")
         else if (i == 0) print("╚")
         else if (i % 2 == 0) print("╩")
-        else if (i % 2 == 1) print("═")
+        else print("═")
     }
+    println()
 }
 
 fun setBoardDimensions(): Array<Int> {
@@ -72,33 +77,87 @@ fun setBoardDimensions(): Array<Int> {
     return arrayOf(rows, columns)
 }
 
-fun main() {
-    var rowsAndColumns: Array<Int>
+fun makeMove(board: Array<Array<Player>>, move: Int, player: Player) {
+    loop@ for (i in board.lastIndex downTo 0) {
+        for (j in 0..board[i].lastIndex) {
+            if (j == move - 1 && board[i][j] == Player.BLANK) {
+                board[i][j] = player
+                break@loop
+            }
+        }
+    }
+
+}
+
+fun checkColumn(board: Array<Array<Player>>, move: Int): Boolean {
+    if (board[0][move - 1] != Player.BLANK) {
+        println("Column $move is full")
+        return false
+    }
+    return true
+}
+
+fun play() {
+    val rowsAndColumns: Array<Int>
     val rows: Int
     val columns: Int
-
+    val player = Array<String>(2) { "" }
     println("Connect Four")
     println("First player's name:")
-    val firstPlayer = readln()
+    player[0] = readln()
     println("Second player's name:")
-    val secondPLayer = readln()
+    player[1] = readln()
 
     rowsAndColumns = setBoardDimensions()
     rows = rowsAndColumns[0]
     columns = rowsAndColumns[1]
 
-    println("$firstPlayer vs $secondPLayer")
+    println("${player[0]} vs ${player[1]}")
     println("$rows X $columns board")
-
+    var playersTurn = 0
 
     val board = Board(rows, columns)
     printBoard(board.board)
+
+    while (true) {
+        println("${player[playersTurn]}'s turn:")
+        val move = readln()
+
+        if (move.lowercase() == "end") {
+            println("Game over!")
+            break
+        }
+
+        if (move.matches("""\d+""".toRegex())) {
+            if (move.toInt() > board.board[0].size || move.toInt() < 1) {
+                println("The column number is out of range (1 - ${board.board[0].size}) ")
+                continue
+            }
+        } else {
+            println("Incorrect column number")
+            continue
+        }
+
+        if (!checkColumn(board.board, move.toInt())) {
+            continue
+        }
+
+        when (playersTurn) {
+            0 -> {
+                makeMove(board.board, move.toInt(), Player.RED)
+                playersTurn += 1
+            }
+
+            1 -> {
+                makeMove(board.board, move.toInt(), Player.YELLOW)
+                playersTurn -= 1
+            }
+        }
+
+        printBoard(board.board)
+    }
 }
 
-/*repeat(columns) { print(" ${it + 1}") }
-println()
-for (i in 1..rows) {
-    print("| ".repeat(columns))
-    println("|")
+fun main() {
+    play()
 }
-println("=".repeat(columns * 2 + 1))*/
