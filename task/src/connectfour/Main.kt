@@ -1,5 +1,7 @@
 package connectfour
 
+const val BoardMaximumSize = 9
+
 enum class Player() {
     RED,
     YELLOW,
@@ -97,6 +99,79 @@ fun checkColumn(board: Array<Array<Player>>, move: Int): Boolean {
     return true
 }
 
+fun checkPair(board: Array<Array<Player>>): Boolean {
+    for (i in 0..board.lastIndex) {
+        val pairs = board[i].toList().zipWithNext { a, b -> a == b && a != Player.BLANK }
+            .zipWithNext { a, b -> a == b && a }
+            .zipWithNext { a, b -> a == b && a }
+
+        if (pairs.contains(true)) {
+            return true
+        }
+    }
+
+    return false
+}
+
+fun checkGameResult(board: Array<Array<Player>>): Boolean {
+    val verticalBoard = Array(board[0].size) { Array<Player>(board.size) { Player.BLANK } }
+
+    for (i in 0..board[0].lastIndex) {
+        for (j in 0..board.lastIndex) {
+            verticalBoard[i][j] = board[j][i]
+        }
+    }
+
+    val diagonalBoard =
+        Array(BoardMaximumSize * BoardMaximumSize) { Array<Player>(BoardMaximumSize) { Player.BLANK } }
+    var step = 0
+    for (i in 0..board.lastIndex) {
+        for (j in 0..board[i].lastIndex) {
+            if (j <= board[i].lastIndex - 3 && i <= board.lastIndex - 3) {
+                diagonalBoard[step][j] = board[i][j]
+                diagonalBoard[step][j + 1] = board[i + 1][j + 1]
+                diagonalBoard[step][j + 2] = board[i + 2][j + 2]
+                diagonalBoard[step][j + 3] = board[i + 3][j + 3]
+                step++
+            }
+        }
+    }
+
+    val diagonalReversedBoard =
+        Array(BoardMaximumSize * BoardMaximumSize) { Array<Player>(BoardMaximumSize) { Player.BLANK } }
+    step = 0
+    for (i in 0..board.lastIndex) {
+        for (j in 0..board[i].lastIndex) {
+            if (j >= 3 && i <= board.lastIndex - 3) {
+                diagonalReversedBoard[step][j] = board[i][j]
+                diagonalReversedBoard[step][j - 1] = board[i + 1][j - 1]
+                diagonalReversedBoard[step][j - 2] = board[i + 2][j - 2]
+                diagonalReversedBoard[step][j - 3] = board[i + 3][j - 3]
+                step++
+            }
+        }
+    }
+
+    return when {
+        checkPair(board) -> true
+        checkPair(verticalBoard) -> true
+        checkPair(diagonalBoard) -> true
+        checkPair(diagonalReversedBoard) -> true
+        else -> false
+    }
+}
+
+fun boardIsFull(board: Array<Array<Player>>): Boolean {
+    for (i in board) {
+        for (j in i) {
+            if (j == Player.BLANK) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
 fun play() {
     val rowsAndColumns: Array<Int>
     val rows: Int
@@ -145,16 +220,34 @@ fun play() {
         when (playersTurn) {
             0 -> {
                 makeMove(board.board, move.toInt(), Player.RED)
+                if (checkGameResult(board.board)) {
+                    printBoard(board.board)
+                    println("Player ${player[playersTurn]} won")
+                    println("Game Over!")
+                    break
+                }
                 playersTurn += 1
             }
 
             1 -> {
                 makeMove(board.board, move.toInt(), Player.YELLOW)
+                if (checkGameResult(board.board)) {
+                    printBoard(board.board)
+                    println("Player ${player[playersTurn]} won")
+                    println("Game Over!")
+                    break
+                }
                 playersTurn -= 1
             }
         }
 
         printBoard(board.board)
+
+        if (boardIsFull(board.board)) {
+            println("It is a draw")
+            println("Game Over!")
+            break
+        }
     }
 }
 
